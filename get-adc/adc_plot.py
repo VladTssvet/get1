@@ -31,3 +31,14 @@ def plot_sampling_period_hist(time):
     plt.xlim(0, 0.06)
     plt.grid(True)
     plt.show()
+
+
+def plot_period_histogram(periods):
+    plt.figure(figsize=(10, 6))
+    plt.hist(periods, bins=50, color='tab:blue', edgecolor='black')
+    plt.title("Распределение периодов дискретизации измерений\nпо времени на одно измерение")
+    plt.xlabel("Период измерения, с")
+    plt.ylabel("Количество измерений")
+    plt.grid(True)
+    plt.show()
+
