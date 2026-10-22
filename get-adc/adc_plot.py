@@ -5,8 +5,8 @@ def plot_voltage_vs_time(time, voltage, max_voltage):
     plt.plot(time, voltage)
     
     plt.title("Напряжение на входе АЦП от времени")
-    plt.xlabel("Время, с")
-    plt.ylabel("Напряжение, В")
+    plt.xlabel("Время, c")
+    plt.ylabel("Напряжение, B")
     
     if time:
         plt.xlim(0, time[-1])
