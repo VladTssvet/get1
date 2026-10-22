@@ -67,7 +67,7 @@ if __name__ == "__main__":
         adc = R2R_ADC(3.183, 0.002, False)
 
         while True:
-            voltage = adc.get_sar_voltage()
+            voltage = adc.get_sc_voltage()
             print(f"Измеренное напряжение: {voltage:.3f} В")
 
     finally:

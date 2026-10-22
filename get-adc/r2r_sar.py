@@ -21,7 +21,7 @@ if __name__ == "__main__":
 
         adc_plot.plot_voltage_vs_time(time_values, voltage_values, adc.dynamic_range)
         
-        adc_plot.plot_voltage_histogram(voltage_values, adc.dynamic_range)
+        adc_plot.plot_sampling_period_hist(time_values)
 
     finally:
         adc.deinit()

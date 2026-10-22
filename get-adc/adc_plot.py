@@ -22,7 +22,7 @@ def plot_sampling_period_hist(time):
         sampling_periods.append(period)
 
     plt.figure(figsize=(10, 6))
-    plt.hist(sampling_periods)
+    plt.hist(sampling_periods, bins = 50)
     
     plt.title("Распределение периодов дискретизации измерений\nпо времени на одно измерение")
     plt.xlabel("Период измерения, с")
@@ -33,7 +33,7 @@ def plot_sampling_period_hist(time):
     plt.show()
 
 
-def plot_period_histogram(periods):
+def plot_voltage_histogram(periods):
     plt.figure(figsize=(10, 6))
     plt.hist(periods, bins=50, color='tab:blue', edgecolor='black')
     plt.title("Распределение периодов дискретизации измерений\nпо времени на одно измерение")
