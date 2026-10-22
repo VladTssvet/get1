@@ -39,6 +39,29 @@ class R2R_ADC:
         return number / 255 * self.dynamic_range
 
 
+    def successive_approximation_adc(self):
+        low = 0
+        high = 255
+        result = 0
+
+        for _ in range(8):
+            mid = (low + high) // 2
+            self.number_to_dac(mid)
+            time.sleep(self.compare_time)
+
+            if GPIO.input(self.comp_gpio) == 1:
+                high = mid - 1
+            else:
+                result = mid
+                low = mid + 1
+
+        return result
+
+    def get_sar_voltage(self):
+        number = self.successive_approximation_adc()
+        return number / 255 * self.dynamic_range
+
+
 if __name__ == "__main__":
     try:
         adc = R2R_ADC(3.183, 0.002, False)
