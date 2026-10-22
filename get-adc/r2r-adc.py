@@ -30,7 +30,7 @@ class R2R_ADC:
         for number in range(256):
             self.number_to_dac(number)
             time.sleep(self.compare_time)
-            if GPIO.input(self.comp_gpio) == 0:
+            if GPIO.input(self.comp_gpio) == 1:
                 return number
         return 255
 
@@ -41,7 +41,7 @@ class R2R_ADC:
 
 if __name__ == "__main__":
     try:
-        adc = R2R_ADC(3.183, 0.01, True)
+        adc = R2R_ADC(3.183, 0.002, False)
 
         while True:
             voltage = adc.get_sc_voltage()
