@@ -20,6 +20,8 @@ if __name__ == "__main__":
             time_values.append(t)
 
         adc_plot.plot_voltage_vs_time(time_values, voltage_values, adc.dynamic_range)
+        
+        adc_plot.plot_voltage_histogram(voltage_values, adc.dynamic_range)
 
     finally:
         adc.deinit()
