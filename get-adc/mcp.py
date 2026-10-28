@@ -23,4 +23,4 @@ if __name__ == "__main__":
         adc_plot.plot_sampling_period_hist(time_values)
 
     finally:
-        adc.deinit()
+        adc.deinit() 
