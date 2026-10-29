@@ -11,10 +11,10 @@ class MCP3021:
         self.bus.close()
 
     def get_number(self):
-        data = self.bus.read_word_data(self.address, 0)
+        data = self.bus.read_i2c_block_data(self.address, 0, 2)
         
-        lower_data_byte = data >> 8
-        upper_data_byte = data & 0xFF
+        upper_data_byte = data[0]
+        lower_data_byte = data[1]
         
         number = (upper_data_byte << 6) | (lower_data_byte >> 2)
         
