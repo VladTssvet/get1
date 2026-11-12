@@ -1,78 +1,69 @@
-import csv
 import time
-import numpy as np
-import matplotlib.pyplot as plt
-import RPi.GPIO as GPIO
+import csv
+import adc_plot
 from mcp3021_driver import MCP3021
 
-DYNAMIC_RANGE = 5.186
-PIN = 14
-PRE_DISCHARGE = 3        # Уменьшил время, чтобы не ждать 50 секунд
-CHARGE_TIME = 15         # 15 секунд на зарядку
-DISCHARGE_TIME = 15      # 15 секунд на разрядку
-CSV_NAME = "data.csv"    # То самое имя файла из задания
+DYNAMIC_RANGE = 5.0
+DURATION =  100
+CSV_PATH = "adc_data.csv"
 
-times = []
-voltages = []
-states = []
+# Пороги для статуса конденсатора
+THRESHOLD_LOW = 0.1    # В — ниже считаем разряженным
+THRESHOLD_HIGH = 4.9   # В — выше считаем заряженным
 
-def record(adc, duration, state, start):
-    t_end = time.time() + duration
-    while time.time() < t_end:
-        # Читаем без всяких "заглушек", как в твоем рабочем коде
-        voltages.append(adc.get_voltage())
-        times.append(time.time() - start)
-        states.append(state)
+adc = MCP3021(dynamic_range=DYNAMIC_RANGE, verbose=False)
 
-def save_csv():
-    with open(CSV_NAME, "w", newline="") as f:
+voltage_values = []
+time_values = []
+
+# Чтобы не спамить одинаковым сообщением каждые 10 мс — запоминаем последний статус
+last_status = None
+
+
+def update_status(voltage):
+    """Печатает статус конденсатора при переходе через порог."""
+    global last_status
+
+    if voltage < THRESHOLD_LOW:
+        status = "discharged"
+        message = "Конденсатор разряжен"
+    elif voltage > THRESHOLD_HIGH:
+        status = "charged"
+        message = "Заряжен"
+    else:
+        status = None
+        message = None
+
+    if status != last_status:
+        if message is not None:
+            print(message, flush=True)
+        last_status = status
+
+
+try:
+    start_time = time.time()
+    while time.time() - start_time < DURATION:
+        v = adc.get_voltage()
+        t = time.time() - start_time
+
+        voltage_values.append(v)
+        time_values.append(t)
+
+        update_status(v)
+
+        time.sleep(0.01)
+
+    # Сохраняем данные в CSV
+    with open(CSV_PATH, mode="w", newline="") as f:
         writer = csv.writer(f)
-        writer.writerow(["Время [с]", "Напряжение [В]"])
-        for t, v in zip(times, voltages):
-            writer.writerow([f"{t:.4f}", f"{v:.4f}"])
-    print(f"Данные сохранены в {CSV_NAME}")
+        writer.writerow(["time_s", "voltage_V"])
+        for t, v in zip(time_values, voltage_values):
+            writer.writerow([f"{t:.6f}", f"{v:.6f}"])
 
-def plot():
-    plt.figure(figsize=(10, 6))
-    plt.plot(times, voltages, ".-", markersize=2, label="Напряжение на конденсаторе")
-    plt.title("Зарядка и разрядка конденсатора")
-    plt.xlabel("Время, с")
-    plt.ylabel("Напряжение, В")
-    plt.ylim(0, DYNAMIC_RANGE)
-    plt.grid(True, alpha=0.3)
-    plt.legend()
-    
-    plt.savefig("graph.png")
-    print("График сохранен в graph.png")
+    print(f"Данные сохранены в {CSV_PATH} ({len(time_values)} строк)", flush=True)
 
-    plt.show() 
+    adc_plot.plot_voltage_vs_time(time_values, voltage_values, DYNAMIC_RANGE)
+    adc_plot.plot_sampling_period_hist(time_values)
 
-if __name__ == "__main__":
-    GPIO.setmode(GPIO.BCM)
-    GPIO.setup(PIN, GPIO.OUT, initial=0)
-    adc = MCP3021(DYNAMIC_RANGE)
-    
-    try:
-        print(f"Разряжаю конденсатор {PRE_DISCHARGE} с перед началом...")
-        time.sleep(PRE_DISCHARGE)
-        start = time.time()
-
-        print("Зарядка: GPIO14 = 1")
-        GPIO.output(PIN, 1)
-        record(adc, CHARGE_TIME, 1, start)
-
-        print("Разрядка: GPIO14 = 0")
-        GPIO.output(PIN, 0)
-        record(adc, DISCHARGE_TIME, 0, start)
-
-    except KeyboardInterrupt:
-        print("\nИзмерение прервано")
-    finally:
-        GPIO.output(PIN, 0)
-        GPIO.cleanup()
-        adc.deinit()
-
-    if times:
-        print(f"Измерений: {len(times)}, частота ~{len(times) / times[-1]:.0f} Гц")
-        save_csv()
-        plot()
+finally:
+    adc.deinit()
