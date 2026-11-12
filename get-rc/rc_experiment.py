@@ -1,19 +1,19 @@
 import RPi.GPIO as GPIO
-import r2r_adc
+import mcp3021_driver as mcp
 import adc_plot
 import time
 import csv
 
 PIN_RC = 17
 DURATION = 3.0
-DYNAMIC_RANGE = 3.183
+DYNAMIC_RANGE = 5.0
 
 if __name__ == "__main__":
     try:
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(PIN_RC, GPIO.OUT, initial=0)
         
-        adc = r2r_adc.R2R_ADC(DYNAMIC_RANGE, compare_time=0.001, verbose=False)
+        adc = mcp.MCP3021(DYNAMIC_RANGE, verbose=False)
         
         time_values = []
         voltage_values = []
@@ -23,7 +23,7 @@ if __name__ == "__main__":
         start_time = time.time()
         
         while (time.time() - start_time) < DURATION:
-            v = adc.get_sar_voltage()
+            v = adc.get_voltage()
             t = time.time() - start_time
             voltage_values.append(v)
             time_values.append(t)
@@ -33,7 +33,7 @@ if __name__ == "__main__":
         start_time = time.time()
         
         while (time.time() - start_time) < DURATION:
-            v = adc.get_sar_voltage()
+            v = adc.get_voltage()
             t = time.time() - start_time + DURATION
             voltage_values.append(v)
             time_values.append(t)
